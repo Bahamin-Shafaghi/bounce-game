@@ -3,7 +3,7 @@
 
 A Python game where you guide a bouncing ball through rotating obstacles. Actually, I designed this game as a school project 4 years ago (I obviously overthought what the teacher was asking for). I recently found it on my computer and thought it would be fun to share.
 
-  
+![Demo](media/demo.gif)
 
 # How to run
 
