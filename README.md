@@ -44,3 +44,21 @@ In later levels, extra obstacles will always appear.
   
 
 **Goal:** Make the ball touch the rotating obstacle that has the same color as the ball.
+
+# Tests
+
+Install the dev dependencies and run the unit tests:
+
+```
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+The tests run headless (`conftest.py` selects the dummy SDL video and audio
+drivers), so no window or sound device is needed.
+
+To see coverage:
+
+```
+coverage run --source=. -m pytest && coverage report
+```
