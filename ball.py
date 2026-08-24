@@ -53,7 +53,7 @@ class Ball:
                                                                                         int(self.y) + self.r)))
         self.backSize.append(self.r / 2)
         self.vy += 0.2
-        if not distance((self.x, self.y), self.start) < self.r + int(
+        if not math.sqrt((self.x - self.start[0]) ** 2 + (self.y - self.start[1]) ** 2) < self.r + int(
                 winSize[1] / 41.7):
             if not self.released:
                 self.attention = True
@@ -94,7 +94,7 @@ class Ball:
             reflect = True
             if play:
                 bounce.play()
-        if distance((self.x, self.y), (tar.x, tar.y)) <= round(winSize[1] / 32) + self.r:
+        if math.sqrt((self.x - tar.x) ** 2 + (self.y - tar.y) ** 2) <= round(winSize[1] / 32) + self.r:
             return "win", reflect
 
         if not self.passed:
@@ -120,7 +120,11 @@ class Ball:
 
                     if play:
                         bounce.play()
-                    self.vx, self.vy = reflect_off(self, (tar.x, tar.y))
+                    v1 = pygame.math.Vector2(self.x, self.y)
+                    v2 = pygame.math.Vector2(tar.x, tar.y)
+                    nv = v2 - v1
+                    m1 = pygame.math.Vector2(self.vx, self.vy).reflect(nv)
+                    self.vx, self.vy = m1.x, m1.y
                     return "reflected", reflect
         return "nothing", reflect
 

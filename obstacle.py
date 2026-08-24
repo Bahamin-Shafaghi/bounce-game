@@ -1,8 +1,9 @@
+import math
+
 from ball import Ball
 import pygame
 
 from consts import *
-from utils import distance, reflect_off
 
 
 class Obstacle:
@@ -22,11 +23,19 @@ class Obstacle:
         if self.x <= ball.x <= self.x + self.length and self.y - self.r <= ball.y <= self.y + self.r:
             ball.vy *= -1
             re = "reflected"
-        elif distance((self.x, self.y), (ball.x, ball.y)) <= ball.r + self.r:
-            ball.vx, ball.vy = reflect_off(ball, (self.x, self.y))
+        elif math.sqrt((self.x - ball.x) ** 2 + (self.y - ball.y) ** 2) <= ball.r + self.r:
+            v1 = pygame.math.Vector2(self.x, self.y)
+            v2 = pygame.math.Vector2(ball.x, ball.y)
+            nv = v2 - v1
+            m1 = pygame.math.Vector2(ball.vx, ball.vy).reflect(nv)
+            ball.vx, ball.vy = m1.x, m1.y
             re = "reflected"
-        elif distance((self.x + self.length, self.y), (ball.x, ball.y)) <= ball.r + self.r:
-            ball.vx, ball.vy = reflect_off(ball, (self.x + self.length, self.y))
+        elif math.sqrt((self.x + self.length - ball.x) ** 2 + (self.y - ball.y) ** 2) <= ball.r + self.r:
+            v1 = pygame.math.Vector2(self.x + self.length, self.y)
+            v2 = pygame.math.Vector2(ball.x, ball.y)
+            nv = v2 - v1
+            m1 = pygame.math.Vector2(ball.vx, ball.vy).reflect(nv)
+            ball.vx, ball.vy = m1.x, m1.y
             re = "reflected"
 
         return re
