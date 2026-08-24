@@ -8,7 +8,7 @@ s = round(winSize[1] / 24 + 10)
 
 def exitAll(dis: pygame.Surface, back, tar: Target, ball: Ball, text: pygame.Surface, score, scoreImage):
     ball.clearBack()
-    repeat = round(int((winSize[1] + 4 - tar.y + tar.r) / v) / 255)
+    repeat = max(1, round(int((winSize[1] + 4 - tar.y + tar.r) / v) / 255))
     alpha = 0
     for i in range(int((winSize[1] + 4 - tar.y + tar.r) / v)):
         pygame.draw.circle(dis, mainColor, (ball.x, ball.y), round(winSize[1] / 41.7))
@@ -44,7 +44,7 @@ def enterAll(dis: pygame.Surface, back, ball: Ball, tar: Target, text: pygame.Su
     tar1 = tar
     ball1.y = -ball.r
     tar1.y = ball1.y - (tar.y - ball.y)
-    repeat = round(int((winSize[1] + 1 - tar.y + tar.r) / v) / 255)
+    repeat = max(1, round(int((winSize[1] + 1 - tar.y + tar.r) / v) / 255))
     for i in range(int((winSize[1] - int(winSize[1] / 3.69) + ball.r) / v)):
         dis.fill(back)
         pygame.draw.circle(dis, mainColor, (ball.x, ball.y), round(winSize[1] / 41.7))

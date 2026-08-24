@@ -10,19 +10,23 @@ mainColor = (168, 165, 165)
 
 
 def suitableSize(x, y):
-    if x >= y:
-        return "width should be less than height!"
-    if not str.isdigit(x) or not str.isdigit(y):
-        return "You should give integers!"
+    if not str(x).isdigit() or not str(y).isdigit():
+        raise ValueError("You should give integers!")
+    if int(x) >= int(y):
+        raise ValueError("width should be less than height!")
     return "good"
 
 
 '''width = input("Please enter a size for width of game window: ")
 height = input("Please enter a size for height of game window: ")
-while suitableSize(width, height) != "good":
-    print(suitableSize(width, height))
-    width = input("Please enter a size for width of game window: ")
-    height = input("Please enter a size for height of game window: ")
+while True:
+    try:
+        suitableSize(width, height)
+        break
+    except ValueError as e:
+        print(e)
+        width = input("Please enter a size for width of game window: ")
+        height = input("Please enter a size for height of game window: ")
 
 winSize = (int(width), int(height))'''
 dis = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)

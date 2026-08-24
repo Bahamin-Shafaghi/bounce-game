@@ -37,10 +37,7 @@ class Ball:
         self.backSize = []
         self.backPos = []
 
-    def start(self):
-        self.st = True
-
-    def update(self, tar: Target, bounce=pygame.mixer.Sound("media/bounce.mp3"), start=pygame.mixer.Sound("media/start.mp3"),
+    def update(self, tar: Target, bounce=None, start=None,
                play=True) -> tuple:
         reflect = False
         self.x += self.vx
@@ -74,17 +71,17 @@ class Ball:
             self.vx *= -1
             self.passed = False
             reflect = True
-            if play:
+            if play and bounce is not None:
                 bounce.play()
         if self.x <= self.r:
             self.x = self.r
             self.vx *= -1
             self.passed = False
             reflect = True
-            if play:
+            if play and bounce is not None:
                 bounce.play()
         if self.y >= winSize[1] - self.r:
-            if play:
+            if play and start is not None:
                 start.play()
             return "lose", reflect
         if self.y <= self.r:
@@ -92,7 +89,7 @@ class Ball:
             self.vy *= -1
             self.passed = False
             reflect = True
-            if play:
+            if play and bounce is not None:
                 bounce.play()
         if math.sqrt((self.x - tar.x) ** 2 + (self.y - tar.y) ** 2) <= round(winSize[1] / 32) + self.r:
             return "win", reflect
@@ -135,11 +132,11 @@ class Ball:
         self.vy = v[1]
         for i in range(len(self.backSize)):
             self.backSize[i] -= 0.2
-            self.backPos[i][0] = (self.backPos[0] - 0.1, self.backPos[1])
-            self.backPos[i][1] = (self.backPos[0], self.backPos[1] - 1)
+            self.backPos[i] = (self.backPos[i][0] - 0.1, self.backPos[i][1] - 1)
         self.backPos.append(
             (random.randint(int(self.x) - self.r, int(self.x) + self.r), random.randint(int(self.y) - self.r,
                                                                                         int(self.y) + self.r)))
+        self.backSize.append(self.r / 2)
         testBall = Ball(pos, self.color, self.vx, self.vy)
         self.wayBall = []
         for i in range(10):

@@ -1,10 +1,42 @@
 import math
+import os
 import random
 
 import pygame
 import pygame.gfxdraw
 
 from consts import *
+
+
+ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "media")
+
+
+def asset_path(name):
+    return os.path.join(ASSET_DIR, name)
+
+
+def load_sound(name):
+    path = asset_path(name)
+    try:
+        return pygame.mixer.Sound(path)
+    except (pygame.error, FileNotFoundError) as e:
+        raise RuntimeError(f"Failed to load asset {path!r}: {e}") from e
+
+
+def load_image(name):
+    path = asset_path(name)
+    try:
+        return pygame.image.load(path)
+    except (pygame.error, FileNotFoundError) as e:
+        raise RuntimeError(f"Failed to load asset {path!r}: {e}") from e
+
+
+def load_music(name):
+    path = asset_path(name)
+    try:
+        pygame.mixer.music.load(path)
+    except (pygame.error, FileNotFoundError) as e:
+        raise RuntimeError(f"Failed to load asset {path!r}: {e}") from e
 
 
 def circlePart(start_angle, angle, screen, color, r, pos, width):
@@ -46,21 +78,22 @@ def isInCircle(pos, r, isIn):
 def getV(l0, k, arr_x, arr_y, m):
     arr_fy = [0, 0]
     arr_fx = [0, 0]
-    try:
-        l = math.sqrt((arr_y[1] - arr_y[0]) ** 2 + (arr_x[1] - arr_x[0]) ** 2)
-        f = -k * (arr_y[1] - arr_y[0] - ((arr_y[1] - arr_y[0]) * (l0 / l)))
-        f1 = -k * (arr_x[1] - arr_x[0] - ((arr_x[1] - arr_x[0]) * (l0 / l)))
-        arr_fy[1] += f
-        arr_fy[0] += -f
-        arr_fx[1] += f1
-        arr_fx[0] += -f1
-        ay = arr_fy[0] / m
-        vy = ay
-        ax = arr_fx[0] / m
-        vx = ax
-        return vx, vy
-    except ZeroDivisionError:
-        return 0, 0
+    l = math.sqrt((arr_y[1] - arr_y[0]) ** 2 + (arr_x[1] - arr_x[0]) ** 2)
+    if l == 0:
+        return 0.0, 0.0
+    if m == 0:
+        raise ValueError(f"Mass must not be zero (ball radius: {m + 3})")
+    f = -k * (arr_y[1] - arr_y[0] - ((arr_y[1] - arr_y[0]) * (l0 / l)))
+    f1 = -k * (arr_x[1] - arr_x[0] - ((arr_x[1] - arr_x[0]) * (l0 / l)))
+    arr_fy[1] += f
+    arr_fy[0] += -f
+    arr_fx[1] += f1
+    arr_fx[0] += -f1
+    ay = arr_fy[0] / m
+    vy = ay
+    ax = arr_fx[0] / m
+    vx = ax
+    return vx, vy
 
 
 def sumRange(x, y):
