@@ -26,6 +26,19 @@ def draw_circle(surface, x, y, radius, color):
     pygame.gfxdraw.filled_circle(surface, int(x), int(y), int(radius), color)
 
 
+def distance(p1, p2):
+    return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+
+def reflect_off(obj, pivot):
+    nv = pygame.math.Vector2(pivot) - pygame.math.Vector2(obj.x, obj.y)
+    return tuple(pygame.math.Vector2(obj.vx, obj.vy).reflect(nv))
+
+
+def random_play_x():
+    return random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6)))
+
+
 def isInRect(rect, pos):
     if rect[0] <= pos[0] <= rect[0] + rect[2] and rect[1] <= pos[1] <= rect[1] + rect[3]:
         return True
@@ -38,7 +51,7 @@ def random_color():
 
 
 def isInCircle(pos, r, isIn):
-    if math.sqrt((isIn[0] - pos[0]) ** 2 + (isIn[1] - pos[1]) ** 2) <= r:
+    if distance(isIn, pos) <= r:
         return True
     return False
 
@@ -99,3 +112,14 @@ def suitableObs(obs, xy):
         if i.x - i.r <= xy[0] <= i.x + i.length + i.r:
             return False
     return True
+
+
+def draw_score_hud(surface, text, scoreImage, s):
+    pygame.draw.rect(surface, mainColor, (5, 5, text.get_rect()[2] + s + 30, text.get_rect()[3] + 7),
+                     border_radius=20)
+    surface.blit(text, (s + 20, 10))
+    surface.blit(scoreImage, (8, 3))
+
+
+def blit_center_x(surface, text, y):
+    surface.blit(text, (winSize[0] / 2 - text.get_rect()[2] / 2, y))

@@ -4,14 +4,15 @@ import helping
 from ball import Ball
 from target import Target
 from obstacle import Obstacle
+from level import new_level, spawn_obstacles
 
-start = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))), winSize[1] - round(winSize[1] / 3.7))
-colors = good_colors(2)
-color = colors[0]
-movement = random.randint(15, 25)
-xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))), random.randint(int(winSize[1] / 6.4), int(winSize[1] / 3.2)))
-tar = Target(colors, xy, (xy[0] + movement * 2, xy[1] + movement))
-ball = Ball(start, color, 10, -15)
+
+def aim_ball(ball, start, tar, v, obs, divisor):
+    ball.setPos((start[0] + (pygame.mouse.get_pos()[0] - ball.x) / divisor,
+                 start[1] + (pygame.mouse.get_pos()[1] - ball.y) / divisor), tar, v, obs)
+
+
+start, colors, color, tar, ball = new_level(2, (10, -15))
 
 font = pygame.font.Font(pygame.font.get_default_font(), round(winSize[1] / 24))
 
@@ -28,18 +29,7 @@ score1 = pygame.transform.scale(score1, (s, s))
 score2 = pygame.transform.scale(score2, (s, s))
 
 level = 1
-rand = random.randint(1, 11 - min(10, level))
-if rand == 1:
-    num = random.randint(1, 3)
-    obs = []
-    for i in range(num):
-        xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))), round(winSize[1] - winSize[1] / 1.95))
-        while not suitableObs(obs, xy):
-            xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))),
-                  round(winSize[1] - winSize[1] / 1.95))
-        obs.append(Obstacle(xy))
-else:
-    obs = [Obstacle((1000, 1000))]
+rand, obs = spawn_obstacles(level)
 
 done = False
 pygame.mixer.init()
@@ -82,14 +72,12 @@ while not done:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if isInCircle(start, 15, pygame.mouse.get_pos()):
                     clicked = True
-                    ball.setPos((start[0] + (pygame.mouse.get_pos()[0] - ball.x) / 4,
-                                 start[1] + (pygame.mouse.get_pos()[1] - ball.y) / 4), tar, (vx, vy), obs)
+                    aim_ball(ball, start, tar, (vx, vy), obs, 4)
             if event.type == pygame.MOUSEMOTION:
                 if bool(pygame.mouse.get_pressed()[0]):
                     if isInCircle(start, 15, pygame.mouse.get_pos()):
                         clicked = True
-                        ball.setPos((start[0] + (pygame.mouse.get_pos()[0] - ball.x) / 4,
-                                     start[1] + (pygame.mouse.get_pos()[1] - ball.y) / 4), tar, (vx, vy), obs)
+                        aim_ball(ball, start, tar, (vx, vy), obs, 4)
                     elif clicked:
                         trans = int((((pygame.mouse.get_pos()[0] - start[0]) ** 2 + (
                                     pygame.mouse.get_pos()[1] - start[1]) ** 2) ** 0.5) / 4 * 4.25)
@@ -97,11 +85,9 @@ while not done:
                             trans = 255
                             scale = ((pygame.mouse.get_pos()[0] - start[0]) ** 2 + (
                                     pygame.mouse.get_pos()[1] - start[1]) ** 2) ** 0.5 / 60
-                            ball.setPos((start[0] + (pygame.mouse.get_pos()[0] - ball.x) / scale,
-                                         start[1] + (pygame.mouse.get_pos()[1] - ball.y) / scale), tar, (vx, vy), obs)
+                            aim_ball(ball, start, tar, (vx, vy), obs, scale)
                         else:
-                            ball.setPos((start[0] + (pygame.mouse.get_pos()[0] - ball.x) / 4,
-                                         start[1] + (pygame.mouse.get_pos()[1] - ball.y) / 4), tar, (vx, vy), obs)
+                            aim_ball(ball, start, tar, (vx, vy), obs, 4)
 
         vx, vy = getV(0, 5, [ball.x, start[0]], [ball.y, start[1]], ball.r - 3)
         pygame.draw.circle(dis, mainColor, start, round(winSize[1] / 41.7))
@@ -112,10 +98,7 @@ while not done:
         dis.blit(surf, (start[0] - winSize[1] / 16, start[1] - winSize[1] / 16))
         ball.draw(dis)
         tar.draw(dis)
-        pygame.draw.rect(dis, mainColor, (5, 5, text.get_rect()[2] + s + 30, text.get_rect()[3] + 7),
-                         border_radius=20)
-        dis.blit(text, (s + 20, 10))
-        dis.blit(scoreImage, (8, 3))
+        draw_score_hud(dis, text, scoreImage, s)
         if rand == 1:
             for ob in obs:
                 ob.update(ball)
@@ -142,7 +125,7 @@ while not done:
         reflected = re[1]
         tar.update()
         ball.draw(dis)
-        if math.sqrt((ball.x - ball.start[0]) ** 2 + (ball.y - ball.start[1]) ** 2) < ball.r + round(winSize[1] / 41.7)\
+        if distance((ball.x, ball.y), ball.start) < ball.r + round(winSize[1] / 41.7)\
                 and ball.released:
             ball.x, ball.y = ball.start
             ball = Ball(start, color, 10, -15)
@@ -156,10 +139,7 @@ while not done:
             st = True
         tar.draw(dis)
         pygame.draw.circle(dis, mainColor, start, round(winSize[1] / 41.7))
-        pygame.draw.rect(dis, mainColor, (5, 5, text.get_rect()[2] + s + 30, text.get_rect()[3] + 7),
-                         border_radius=20)
-        dis.blit(text, (s + 20, 10))
-        dis.blit(scoreImage, (8, 3))
+        draw_score_hud(dis, text, scoreImage, s)
         if rand == 1:
             for ob in obs:
                 ha = ob.update(ball)
@@ -183,27 +163,9 @@ while not done:
         if count == numberToGO and numberToGO < 7:
             numberToGO += 1
             count = 1
-        rand = random.randint(1, 11 - min(10, level))
-        if rand == 1:
-            num = random.randint(1, 3)
-            obs = []
-            for i in range(num):
-                xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))),
-                      round(winSize[1] - winSize[1] / 1.95))
-                while not suitableObs(obs, xy):
-                    xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))),
-                          round(winSize[1] - winSize[1] / 1.95))
-                obs.append(Obstacle(xy))
-        else:
-            obs = [Obstacle((1000, 1000))]
+        rand, obs = spawn_obstacles(level)
         alpha = helping.exitAll(dis, backColor, tar, ball, text, scoreRound, scoreImage)
-        colors = good_colors(numberToGO)
-        color = colors[0]
-        movement = random.randint(15, 25)
-        xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))), random.randint(int(winSize[1] / 6.4), int(winSize[1] / 3.2)))
-        tar = Target(colors, xy, (xy[0] + movement * 2, xy[1] + movement))
-        start = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))), winSize[1] - round(winSize[1] / 3.7))
-        ball = Ball(start, color, 0, 0)
+        start, colors, color, tar, ball = new_level(numberToGO, (0, 0))
         helping.enterAll(dis, backColor, ball, tar, text, scoreRound, alpha, scoreImage)
     if happen == "lose":
         if level > 1:
@@ -236,30 +198,12 @@ while not done:
                         else:
                             done = False
                 if end:
-                    start = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))), winSize[1] - round(winSize[1] / 3.7))
-                    colors = good_colors(2)
-                    color = colors[0]
-                    movement = random.randint(15, 25)
-                    xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))), random.randint(int(winSize[1] / 6.4), int(winSize[1] / 3.2)))
-                    tar = Target(colors, xy, (xy[0] + movement * 2, xy[1] + movement))
-                    ball = Ball(start, color, 10, -15)
+                    start, colors, color, tar, ball = new_level(2, (10, -15))
 
                     backColor = backColor1
 
                     level = 1
-                    rand = random.randint(1, 11 - min(10, level))
-                    if rand == 1:
-                        num = random.randint(1, 3)
-                        obs = []
-                        for i in range(num):
-                            xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))),
-                                  round(winSize[1] - winSize[1] / 1.95))
-                            while not suitableObs(obs, xy):
-                                xy = (random.randint(int(winSize[0] / 6.6), int(winSize[0] - (winSize[0] / 6.6))),
-                                      round(winSize[1] - winSize[1] / 1.95))
-                            obs.append(Obstacle(xy))
-                    else:
-                        obs = [Obstacle((1000, 1000))]
+                    rand, obs = spawn_obstacles(level)
                     score = 0
                     count = 0
                     numberToGO = 2
@@ -268,11 +212,11 @@ while not done:
 
                 change = int(winSize[1] / 13.7)
                 text5 = font.render(str(round(lose.get_length() + 3 - passed * 0.013) + 1), True, (161, 184, 33))
-                dis.blit(text, (winSize[0] / 2 - text.get_rect()[2] / 2, winSize[1] - int(winSize[1] / 1.88) - change))
-                dis.blit(text2, (winSize[0] / 2 - text2.get_rect()[2] / 2, winSize[1] - int(winSize[1] / 2.4) - change))
-                dis.blit(text4, (winSize[0] / 2 - text4.get_rect()[2] / 2, winSize[1] - int(winSize[1] / 3.3) - change))
-                dis.blit(text5, (winSize[0] / 2 - text5.get_rect()[2] / 2, winSize[1] - int(winSize[1] / 9.6) - change))
-                dis.blit(text3, (winSize[0] / 2 - text3.get_rect()[2] / 2, winSize[1] - int(winSize[1] / 1.37) - change))
+                blit_center_x(dis, text, winSize[1] - int(winSize[1] / 1.88) - change)
+                blit_center_x(dis, text2, winSize[1] - int(winSize[1] / 2.4) - change)
+                blit_center_x(dis, text4, winSize[1] - int(winSize[1] / 3.3) - change)
+                blit_center_x(dis, text5, winSize[1] - int(winSize[1] / 9.6) - change)
+                blit_center_x(dis, text3, winSize[1] - int(winSize[1] / 1.37) - change)
                 pygame.display.update()
                 pygame.time.delay(13)
                 passed += 1
