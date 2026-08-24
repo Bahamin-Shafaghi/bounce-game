@@ -2,8 +2,6 @@ from utils import *
 from consts import *
 import helping
 from ball import Ball
-from target import Target
-from obstacle import Obstacle
 from level import new_level, spawn_obstacles
 
 
