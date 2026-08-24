@@ -48,6 +48,7 @@ def main():
         obs = [Obstacle((1000, 1000))]
 
     done = False
+    quitting = False
 
     score = 0
     highScore = 0
@@ -75,6 +76,7 @@ def main():
                 if event.type == pygame.QUIT:
                     st = True
                     done = True
+                    quitting = True
                     break
                 if event.type == pygame.MOUSEBUTTONUP:
                     trans = 0
@@ -107,7 +109,7 @@ def main():
                             else:
                                 ball.setPos((start[0] + (pygame.mouse.get_pos()[0] - ball.x) / 4,
                                              start[1] + (pygame.mouse.get_pos()[1] - ball.y) / 4), tar, (vx, vy), obs)
-            if done:
+            if quitting:
                 break
 
             vx, vy = getV(0, 5, [ball.x, start[0]], [ball.y, start[1]], ball.r - 3)
@@ -129,7 +131,7 @@ def main():
                     ob.draw(dis)
             pygame.display.update()
             pygame.time.delay(13)
-        if done:
+        if quitting:
             break
         pygame.mixer.music.fadeout(1000)
         startSound.play()
@@ -144,8 +146,9 @@ def main():
                 if event.type == pygame.QUIT:
                     st = True
                     done = True
+                    quitting = True
                     break
-            if done:
+            if quitting:
                 break
             dis.fill(backColor)
             re = ball.update(tar, bounce, startSound)
@@ -180,7 +183,7 @@ def main():
                     ob.draw(dis)
             pygame.display.update()
             pygame.time.delay(13)
-        if done:
+        if quitting:
             break
         if happen == "win":
             win.play()
@@ -237,6 +240,7 @@ def main():
                         if event.type == pygame.QUIT:
                             end = True
                             done = True
+                            quitting = True
                             break
                         elif event.type == pygame.MOUSEMOTION:
                             if isInRect(text3.get_rect(center=(winSize[0] / 2, winSize[1] - int(winSize[1] / 1.28))), event.pos):
